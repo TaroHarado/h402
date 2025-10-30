@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link rel="icon" type="image/svg+xml" href="logo.png">
+  <title>horse402 : Horse Racing</title>
+  <link rel="stylesheet" href="game.css"/>
+</head>
+<body class="theme-matrix">
+  <!-- MATRIX BACKDROP -->
+  <canvas id="bg-matrix" aria-hidden="true"></canvas>
+
+  <!-- Top bar -->
+  <header class="top glass">
+    <div class="brand">
+     
+      <b>horse402 : Horse Racing</b>
+      <span class="muted">• Game <span id="game-no">1</span></span>
+    </div>
+
+    <nav class="tabs" role="tablist" aria-label="Game stages">
+      <button class="tab" data-stage="R1" aria-selected="true" type="button">
+        <span class="dot live-dot" aria-hidden="true"></span>
+        Game <span id="g1">1</span> — Round 1
+      </button>
+      <button class="tab" data-stage="R2" type="button">
+        Game <span id="g2">1</span> — Round 2
+      </button>
+      <button class="tab" data-stage="FINAL" type="button">
+        Game <span id="g3">1</span> — Final
+      </button>
+    </nav>
+
+    <div class="actions">
+      <a class="btn ghost" id="twitter-link" target="_blank" rel="noopener">Twitter</a>
+      <a class="btn ghost" id="formeme-link" target="_blank" rel="noopener">Pump.fun</a>
+    </div>
+  </header>
+
+  <!-- Main layout -->
+  <main class="layout">
+    <!-- Live / timer -->
+    <section class="panel live neon">
+      <div class="live-left">
+        <div class="kicker">Live now</div>
+        <div id="live-caption" class="headline glitch">Waiting for next game…</div>
+      </div>
+      <div class="live-right">
+        <div class="label muted">Next game starts in</div>
+        <div class="progress big scan"><div class="bar" id="game-bar"></div></div>
+        <div id="game-ct" class="time" aria-live="polite">05:00</div>
+        <button id="live-watch" class="btn primary" type="button" disabled>Watch random heat</button>
+      </div>
+    </section>
+
+    <!-- Heats grid -->
+    <section class="panel heats-panel glass">
+      <div class="panel-head">
+        <div class="phase">Phase: <b id="phase">WAIT</b></div>
+      </div>
+      <div id="heats" class="heats"></div>
+    </section>
+
+    <!-- Leaderboard / holders -->
+    <aside class="panel side glass">
+      <div class="side-head">Leaderboard</div>
+
+      <!-- Skeleton while holders are loading -->
+      <div id="holders-loading" class="skeleton" aria-hidden="false">
+        <div class="row sk"></div><div class="row sk"></div><div class="row sk"></div>
+        <div class="row sk"></div><div class="row sk"></div><div class="row sk"></div>
+        <div class="muted tiny">Collecting holders…</div>
+      </div>
+
+      <div class="search">
+        <input id="search" type="text" placeholder="Find wallet 0x…" autocomplete="off"/>
+        <button id="find" class="btn" type="button">Find</button>
+      </div>
+
+      <div id="board" class="board" hidden></div>
+    </aside>
+  </main>
+
+  <!-- Onboarding modal (auto-open) -->
+  <div id="intro" class="modal" aria-hidden="false">
+    <div class="modal-backdrop"></div>
+    <div class="modal-card intro glass-strong" role="dialog" aria-modal="true" aria-label="Welcome to horse402 | Horse Racing">
+      <!-- Banner -->
+      <figure class="intro-media">
+        <img src="banner.png" alt="horse402 | Horse Racingbanner" class="intro-banner"/>
+        <div class="scanline" aria-hidden="true"></div>
+      </figure>
+
+      <!-- Copy -->
+<div class="intro-content">
+  <div class="intro-badge">⚡ Powered by 402 Protocol</div>
+  <h1 class="neon-text">horse402 : On-Chain Horse Racing</h1>
+  <p class="lead">
+    We host decentralized horse races for <b>$horse402</b> token holders — all runs, payouts, and rewards are executed 
+    through our native <b>402 Protocol</b> logic, built on <b>Jito</b> for fast and fair Solana transactions.
+    <br>
+    <b>10% of total supply</b> is distributed as the global Prize Pool across scheduled Games.
+  </p>
+  <ul class="bullets">
+    <li><b>Eligibility:</b> hold <b>100,000+ $horse402</b> to enter. Your wallet automatically appears on the leaderboard and receives a horse assignment.</li>
+    <li><b>Format:</b> each Game runs in waves — 
+      <span class="pill">Round&nbsp;1: 40 heats × 10</span>
+      <span class="pill">Round&nbsp;2: 4 heats × 10</span>
+      <span class="pill">Final: 4</span>. All heats within a round start in parallel — you can open any and watch live.</li>
+    <li><b>Payouts:</b> every Game allocates a share of the on-chain Prize Pool; the <b>402 Protocol</b> handles distribution automatically — Finals pay the highest rewards.</li>
+  </ul>
+  <div class="cta">
+    <button id="intro-go" class="btn primary" type="button">Enter the arena</button>
+    <button id="intro-close" class="btn ghost" type="button">Maybe later</button>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+  <!-- Race viewer modal -->
+  <div id="viewer" class="modal" aria-hidden="true">
+    <div class="modal-backdrop"></div>
+    <div class="modal-card glass-strong" role="dialog" aria-modal="true" aria-label="Live heat viewer">
+      <button id="viewer-close" class="close" aria-label="Close" type="button">×</button>
+      <div class="viewer-top">
+        <div class="viewer-title">
+          <span class="chip">LIVE</span>
+          <b id="viewer-title">G1-R1-1</b>
+        </div>
+        <div class="viewer-tools">
+          <div class="progress scan"><div class="bar" id="bar"></div></div>
+          <div id="countdown" class="tiny muted">00:00</div>
+        </div>
+      </div>
+
+      <!-- Track (sprites from /images) -->
+      <div id="race-track" class="track-rect neon-frame">
+        <div id="startline" class="startline"></div>
+        <img src="images/tree.png" class="tree" alt="">
+      </div>
+
+      <!-- Legend with lanes/wallets -->
+      <div id="legend" class="legend"></div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+
+  <!-- tiny background Matrix (orange) — no deps -->
+  <script>
+    (function(){
+      const c = document.getElementById('bg-matrix');
+      const ctx = c.getContext('2d');
+      function size(){ c.width = innerWidth; c.height = innerHeight; cols = Math.floor(c.width / 16); drops = Array(cols).fill(0); }
+      let cols = 0, drops = [];
+      const chars = '0123456789ABCDEF⟡';
+      const palette = ['#FF6A00','#FF7F11','#FFA31A','#FFB733'];
+      size(); addEventListener('resize', size, {passive:true});
+      function tick(){
+        ctx.fillStyle = 'rgba(0,0,0,0.12)'; ctx.fillRect(0,0,c.width,c.height);
+        for(let i=0;i<drops.length;i++){
+          const x = i*16, y = drops[i]*16;
+          ctx.fillStyle = palette[(i + drops[i]) % palette.length];
+          const ch = chars[Math.floor(Math.random()*chars.length)];
+          ctx.font = '14px monospace';
+          ctx.fillText(ch, x, y);
+          drops[i] = (y > c.height && Math.random() > 0.975) ? 0 : drops[i]+1;
+        }
+        requestAnimationFrame(tick);
+      }
+      tick();
+    })();
+  </script>
+</body>
+</html>
